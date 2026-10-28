@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>منظومة ايمكس // CYBER SNAKE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cairo:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: #020703;
+            color: #00ff41;
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .crt-scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
+            background-size: 100% 4px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .terminal-box {
+            border: 2px solid #00ff41;
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.45), inset 0 0 12px rgba(0, 255, 65, 0.12);
+            background: rgba(2, 12, 5, 0.96);
+            padding: 20px 16px;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 370px;
+            z-index: 5;
+            position: relative;
+        }
+
+        .header-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            margin-bottom: 12px;
+            direction: ltr;
+        }
+
+        .dots {
+            color: #ff3333;
+            letter-spacing: 3px;
+        }
+
+        .divider {
+            width: 100%;
+            border: none;
+            border-top: 1px solid rgba(0, 255, 65, 0.35);
+            margin: 10px 0 16px 0;
+        }
+
+        #loginScreen {
+            width: 100%;
+            text-align: center;
+        }
+
+        .glow-title {
+            font-family: 'Cairo', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            color: #55ff88;
+            text-shadow: 0 0 10px #00ff41, 0 0 22px #00ff41;
+            margin-bottom: 6px;
+        }
+
+        .sub-code {
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            color: rgba(0, 255, 65, 0.85);
+            margin-bottom: 22px;
+            direction: ltr;
+        }
+
+        .instruction {
+            font-family: 'Cairo', sans-serif;
+            font-size: 15px;
+            margin-bottom: 16px;
+            color: #aaffbb;
+        }
+
+        .terminal-input {
+            width: 100%;
+            background: rgba(0, 25, 8, 0.7);
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            padding: 12px;
+            font-family: 'Cairo', 'Share Tech Mono', sans-serif;
+            font-size: 18px;
+            text-align: center;
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.35);
+            margin-bottom: 18px;
+        }
+
+        .terminal-btn {
+            width: 100%;
+            background-color: #00ff41;
+            color: #020703;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 12px;
+            border: none;
+            cursor: pointer;
+            letter-spacing: 2px;
+            box-shadow: 0 0 16px rgba(0, 255, 65, 0.5);
+            transition: 0.2s all;
+        }
+
+        .terminal-btn:active {
+            background-color: #33ff66;
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.9);
+        }
+
+        .status-msg {
+            font-size: 12px;
+            margin-top: 18px;
+            letter-spacing: 1px;
+            min-height: 18px;
+            direction: ltr;
+        }
+
+        .error-shake {
+            color: #ff3344 !important;
+            animation: shake 0.3s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        #gameArea {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .score-board {
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 25, 8, 0.8);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            padding: 6px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            direction: ltr;
+        }
+
+        #gameCanvas {
+            border: 2px solid #00ff41;
+            background-color: #000c03;
+            box-shadow: 0 0 12px rgba(0, 255, 65, 0.25);
+            display: block;
+        }
+
+        .controls {
+            margin-top: 12px;
+            display: grid;
+            grid-template-columns: repeat(3, 56px);
+            grid-template-rows: repeat(2, 48px);
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .ctrl-btn {
+            background: rgba(0, 30, 10, 0.7);
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            font-size: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(0, 255, 65, 0.2);
+            touch-action: manipulation;
+        }
+
+        .ctrl-btn:active {
+            background: #00ff41;
+            color: #000;
+            box-shadow: 0 0 15px #00ff41;
+        }
+
+        .btn-up { grid-column: 2; grid-row: 1; }
+        .btn-left { grid-column: 1; grid-row: 2; }
+        .btn-down { grid-column: 2; grid-row: 2; }
+        .btn-right { grid-column: 3; grid-row: 2; }
+
+        #gameOverOverlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.88);
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+        }
+
+        .game-over-text {
+            color: #ff3344;
+            font-size: 22px;
+            font-weight: bold;
+            text-shadow: 0 0 12px #ff3344;
+            margin-bottom: 14px;
+            letter-spacing: 2px;
+        }
+
+        .restart-btn {
+            background-color: #00ff41;
+            color: #000;
+            border: none;
+            padding: 10px 22px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 0 15px #00ff41;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="crt-scanlines"></div>
+
+    <div class="terminal-box">
+        
+        <div class="header-bar">
+            <span><span class="dots">• • •</span> EMIX TERMINAL</span>
+            <span>SYSTEM // LOCKED</span>
+        </div>
+
+        <hr class="divider">
+
+        <div id="loginScreen">
+            <h1 class="glow-title">منظومة ايمكس</h1>
+            <div class="sub-code">RESTRICTED SECTOR // AUTH REQUIRED</div>
+
+            <div class="instruction">[ أدخل رمز المرور لتفعيل اللعبة ]</div>
+
+            <input type="password" id="passInput" class="terminal-input" placeholder="اكتب الباسورد هنا...">
+
+            <button class="terminal-btn" onclick="checkAuth()">[ UNLOCK SYSTEM ]</button>
+
+            <div class="status-msg" id="statusBox">SYSTEM STATUS: LOCKED</div>
+        </div>
+
+        <div id="gameArea">
+            <div class="score-board">
+                <span>SCORE: <span id="currentScore">0</span></span>
+                <span>BEST: <span id="highScore">0</span></span>
+            </div>
+
+            <canvas id="gameCanvas" width="280" height="280"></canvas>
+
+            <div class="controls">
+                <div class="ctrl-btn btn-up" onclick="changeDir('UP')">▲</div>
+                <div class="ctrl-btn btn-left" onclick="changeDir('LEFT')">◀</div>
+                <div class="ctrl-btn btn-down" onclick="changeDir('DOWN')">▼</div>
+                <div class="ctrl-btn btn-right" onclick="changeDir('RIGHT')">▶</div>
+            </div>
+        </div>
+
+        <div id="gameOverOverlay">
+            <div class="game-over-text">SYSTEM OVERLOAD</div>
+            <button class="restart-btn" onclick="restartGame()">إعادة المحاولة</button>
+        </div>
+
+    </div>
+
+    <script>
+        function checkAuth() {
+            const input = document.getElementById("passInput").value.trim().toLowerCase();
+            const statusBox = document.getElementById("statusBox");
+
+            if (input === "اخوياايمكس" || input === "اخويا ايمكس" || input === "akhooyaeimx" || input === "akhoyaemix") {
+                statusBox.textContent = "ACCESS GRANTED // LAUNCHING...";
+                statusBox.style.color = "#00ff41";
+
+                setTimeout(() => {
+                    document.getElementById("loginScreen").style.display = "none";
+                    document.getElementById("gameArea").style.display = "flex";
+                    initGame();
+                }, 400);
+            } else {
+                statusBox.textContent = "ACCESS DENIED // WRONG KEY";
+                statusBox.classList.add("error-shake");
+                setTimeout(() => statusBox.classList.remove("error-shake"), 500);
+            }
+        }
+
+        document.getElementById("passInput").addEventListener("keyup", function(e) {
+            if (e.key === "Enter") checkAuth();
+        });
+
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const gridSize = 14;
+        const tileCount = canvas.width / gridSize;
+
+        let snake = [];
+        let food = { x: 5, y: 5 };
+        let dx = 1;
+        let dy = 0;
+        let score = 0;
+        let bestScore = localStorage.getItem("emix_snake_best") || 0;
+        document.getElementById("highScore").textContent = bestScore;
+
+        let gameInterval = null;
+        let isGameOver = false;
+
+        function initGame() {
+            snake = [
+                { x: 8, y: 10 },
+                { x: 7, y: 10 },
+                { x: 6, y: 10 }
+            ];
+            dx = 1;
+            dy = 0;
+            score = 0;
+            isGameOver = false;
+            document.getElementById("currentScore").textContent = score;
+            document.getElementById("gameOverOverlay").style.display = "none";
+            spawnFood();
+            
+            if (gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, 110);
+        }
+
+        function spawnFood() {
+            food.x = Math.floor(Math.random() * tileCount);
+            food.y = Math.floor(Math.random() * tileCount);
+
+            for (let part of snake) {
+                if (part.x === food.x && part.y === food.y) {
+                    spawnFood();
+                    break;
+                }
+            }
+        }
+
+        function gameLoop() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+
+            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+                endGame();
+                return;
+            }
+
+            for (let i = 0; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    endGame();
+                    return;
+                }
+            }
+
+            snake.unshift(head);
+
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                document.getElementById("currentScore").textContent = score;
+                if (score > bestScore) {
+                    bestScore = score;
+                    localStorage.setItem("emix_snake_best", bestScore);
+                    document.getElementById("highScore").textContent = bestScore;
+                }
+                spawnFood();
+            } else {
+                snake.pop();
+            }
+
+            draw();
+        }
+
+        function draw() {
+            ctx.fillStyle = "#000c03";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = "rgba(0, 255, 65, 0.05)";
+            for(let i = 0; i < canvas.width; i += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i); ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = "#55ff99";
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#00ff41";
+            ctx.fillRect(food.x * gridSize + 2, food.y * gridSize + 2, gridSize - 4, gridSize - 4);
+
+            snake.forEach((part, index) => {
+                ctx.fillStyle = index === 0 ? "#00ff41" : "#00aa2b";
+                ctx.shadowBlur = index === 0 ? 8 : 2;
+                ctx.shadowColor = "#00ff41";
+                ctx.fillRect(part.x * gridSize + 1, part.y * gridSize + 1, gridSize - 2, gridSize - 2);
+            });
+
+            ctx.shadowBlur = 0;
+        }
+
+        function changeDir(direction) {
+            if (isGameOver) return;
+            if (direction === 'UP' && dy === 0) { dx = 0; dy = -1; }
+            if (direction === 'DOWN' && dy === 0) { dx = 0; dy = 1; }
+            if (direction === 'LEFT' && dx === 0) { dx = -1; dy = 0; }
+            if (direction === 'RIGHT' && dx === 0) { dx = 1; dy = 0; }
+        }
+
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowUp") changeDir('UP');
+            if (e.key === "ArrowDown") changeDir('DOWN');
+            if (e.key === "ArrowLeft") changeDir('LEFT');
+            if (e.key === "ArrowRight") changeDir('RIGHT');
+        });
+
+        function endGame() {
+            isGameOver = true;
+            clearInterval(gameInterval);
+            document.getElementById("gameOverOverlay").style.display = "flex";
+        }
+
+        function restartGame() {
+            initGame();
+        }
+    </script>
+</body>
+</html>
